@@ -1,4 +1,4 @@
-# ecom-test# 🛒 Demo E-Commerce API
+# ecom-test — 🛒 Demo E-Commerce API
 
 A Spring Boot REST API with JWT authentication, cart management, order checkout, and SMS notifications via Africa's Talking.
 
@@ -55,8 +55,6 @@ cd demo
 
 ### 2. Create the MySQL database
 
-Log into MySQL and create the database:
-
 ```sql
 CREATE DATABASE your_db_name CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
@@ -79,8 +77,6 @@ africastalking.api-key=your_sandbox_api_key
 
 ### 4. Add Flyway dependency to pom.xml
 
-Inside `<dependencies>`:
-
 ```xml
 <dependency>
     <groupId>org.flywaydb</groupId>
@@ -89,8 +85,6 @@ Inside `<dependencies>`:
 ```
 
 ### 5. Place migration file
-
-Make sure the migration SQL file is at:
 
 ```
 src/main/resources/db/migration/V1__init_schema_and_seed_products.sql
@@ -113,7 +107,7 @@ Settings → Build, Execution, Deployment → Compiler → Annotation Processors
 
 Or in IntelliJ: open `DemoApplication.java` → click the green ▶ Run button.
 
-The API will start at: **http://localhost:8080**
+The API starts at: **http://localhost:8080**
 
 ---
 
@@ -122,8 +116,6 @@ The API will start at: **http://localhost:8080**
 ```bash
 curl http://localhost:8080/health
 ```
-
-Expected response:
 
 ```json
 {
@@ -134,54 +126,9 @@ Expected response:
 
 ---
 
-## API Endpoints
-
-### 🔓 Auth (public)
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `POST` | `/api/auth/register` | Register new user |
-| `POST` | `/api/auth/login` | Login → get JWT token |
-| `GET` | `/api/auth/me` | Get authenticated profile |
-
-### 📦 Products (protected)
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `GET` | `/api/products?page=1&limit=10` | Paginated product list |
-| `GET` | `/api/products/{id}` | Single product (404 if not found) |
-| `POST` | `/api/products` | Create product |
-| `PUT` | `/api/products/{id}` | Update product |
-| `DELETE` | `/api/products/{id}` | Delete product |
-
-### 🛒 Cart (protected)
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `GET` | `/api/cart` | Get authenticated user's cart |
-| `POST` | `/api/cart` | Add item (merges if already in cart) |
-| `PATCH` | `/api/cart/{itemId}` | Update qty — send `0` to remove |
-| `DELETE` | `/api/cart` | Clear entire cart |
-
-### 🧾 Orders (protected)
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `POST` | `/api/orders/checkout` | Checkout cart → create order |
-| `GET` | `/api/orders` | Order history (newest first) |
-| `GET` | `/api/orders/{id}` | Single order with full details |
-
-### 💚 Health (public)
-
-| Method | URL | Description |
-|--------|-----|-------------|
-| `GET` | `/health` | Health check |
-
----
-
 ## Authentication
 
-All protected endpoints require a `Bearer` token in the `Authorization` header:
+All protected endpoints require:
 
 ```
 Authorization: Bearer <your_jwt_token>
@@ -190,93 +137,416 @@ Authorization: Bearer <your_jwt_token>
 **Flow:**
 1. `POST /api/auth/register` — create account
 2. `POST /api/auth/login` — get token
-3. Include token in all subsequent requests
-
----
-Here is the **raw Markdown**, clean and ready to paste into your README:
+3. Include token in every subsequent request header
 
 ---
 
-## 🔐 Auth Examples
+## API Reference
 
-### **1. Register New User**
+---
 
-**POST**
-`http://localhost:8080/api/auth/register`
+### 🔓 Auth Endpoints (public)
 
-**Request Body**
+---
 
+#### POST `/api/auth/register` — Register new user
+
+**Request**
 ```json
 {
-    "name": "John Doe",
-    "email": "john2@example.com",
-    "password": "password123",
-    "mobile": "0712345675"
+  "name": "John Doe",
+  "email": "john@example.com",
+  "mobile": "0712345678",
+  "password": "password123"
+}
+```
+
+**201 Created**
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "type": "Bearer",
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+**400 — Missing fields**
+```json
+{
+  "errors": {
+    "email": "Email is required",
+    "password": "Password is required"
+  }
+}
+```
+
+**409 — Email already exists**
+```json
+{
+  "error": "Email already in use: john@example.com"
 }
 ```
 
 ---
 
-### **2. Login**
+#### POST `/api/auth/login` — Login and get token
 
-**POST**
-`http://localhost:8080/api/auth/login`
-
-**Request Body**
-
+**Request**
 ```json
 {
-    "email": "john1@example.com",
-    "password": "password123"
+  "email": "john@example.com",
+  "password": "password123"
 }
 ```
 
-**Example Response**
-
+**200 OK**
 ```json
 {
-    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3MzQwMDYzOSwiZXhwIjoxNzczNDg3MDM5fQ.kWpxEQ30TWxasoWBN8aukTy7w294gg5j9VbXlexDcGI",
-    "type": "Bearer",
-    "id": 2,
-    "name": "John Doe",
-    "email": "john1@example.com"
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "type": "Bearer",
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
 }
 ```
 
-Use the token in the header:
+**401 — Wrong credentials**
+```json
+{
+  "error": "Invalid email or password"
+}
+```
 
+---
+
+#### GET `/api/auth/me` — Get authenticated profile
+
+**Headers**
 ```
 Authorization: Bearer <token>
 ```
 
+**200 OK**
+```json
+{
+  "type": "Bearer",
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
 ---
 
-### **3. Get Authenticated User**
+### 📦 Products Endpoints (protected)
 
-**GET**
-`http://localhost:8080/api/auth/me`
+---
+
+#### GET `/api/products?page=1&limit=10` — Paginated product list
 
 **Headers**
-
 ```
-Authorization: Bearer <your_jwt_token>
+Authorization: Bearer <token>
+```
+
+**Query Params**
+
+| Param | Default | Max | Description |
+|-------|---------|-----|-------------|
+| `page` | `1` | — | Page number |
+| `limit` | `10` | `50` | Items per page |
+
+**200 OK**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "iPhone 15 Pro",
+      "description": "Apple iPhone 15 Pro 256GB",
+      "price": 164999.00,
+      "category": "Electronics",
+      "stock": 25,
+      "inStock": true,
+      "createdAt": "2026-03-13T08:00:00"
+    },
+    {
+      "id": 3,
+      "name": "Sony WH-1000XM5",
+      "description": "Wireless Noise-Cancelling Headphones",
+      "price": 34999.00,
+      "category": "Electronics",
+      "stock": 0,
+      "inStock": false,
+      "createdAt": "2026-03-13T08:00:00"
+    }
+  ],
+  "meta": {
+    "total": 10,
+    "page": 1,
+    "limit": 10,
+    "totalPages": 1
+  }
+}
 ```
 
 ---
 
+#### GET `/api/products/{id}` — Get single product
 
+**200 OK**
+```json
+{
+  "id": 1,
+  "name": "iPhone 15 Pro",
+  "description": "Apple iPhone 15 Pro 256GB",
+  "price": 164999.00,
+  "category": "Electronics",
+  "stock": 25,
+  "inStock": true,
+  "createdAt": "2026-03-13T08:00:00"
+}
+```
 
-## Error Responses
+**404 — Not found**
+```json
+{
+  "error": "Product not found with id: 99"
+}
+```
 
-| Status | When |
-|--------|------|
-| `400` | Missing/invalid fields, empty cart, quantity exceeds stock |
-| `401` | Wrong email or password |
-| `404` | Resource not found or belongs to another user |
-| `409` | Duplicate email/mobile, or out-of-stock product at checkout |
+---
 
-### Example 409 — stock conflict at checkout
+#### POST `/api/products` — Create product
 
+**Request**
+```json
+{
+  "name": "iPhone 15 Pro",
+  "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
+  "price": 164999.00,
+  "category": "Electronics",
+  "stock": 25
+}
+```
+
+**201 Created**
+```json
+{
+  "id": 1,
+  "name": "iPhone 15 Pro",
+  "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
+  "price": 164999.00,
+  "category": "Electronics",
+  "stock": 25,
+  "inStock": true,
+  "createdAt": "2026-03-13T08:00:00"
+}
+```
+
+---
+
+#### PUT `/api/products/{id}` — Update product
+
+**Request**
+```json
+{
+  "name": "iPhone 15 Pro",
+  "description": "Updated description",
+  "price": 159999.00,
+  "category": "Electronics",
+  "stock": 20
+}
+```
+
+**200 OK** — returns updated product
+
+---
+
+#### DELETE `/api/products/{id}` — Delete product
+
+**204 No Content** — no body returned
+
+**404 — Not found**
+```json
+{
+  "error": "Product not found with id: 99"
+}
+```
+
+---
+
+### 🛒 Cart Endpoints (protected)
+
+---
+
+#### GET `/api/cart` — Get user's cart
+
+**200 OK**
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "product": {
+        "id": 1,
+        "name": "iPhone 15 Pro",
+        "price": 164999.00,
+        "category": "Electronics",
+        "stock": 25,
+        "inStock": true
+      },
+      "quantity": 2,
+      "lineTotal": 329998.00
+    },
+    {
+      "id": 2,
+      "product": {
+        "id": 8,
+        "name": "Instant Pot Duo 7-in-1",
+        "price": 8999.00,
+        "category": "Home & Kitchen",
+        "stock": 30,
+        "inStock": true
+      },
+      "quantity": 1,
+      "lineTotal": 8999.00
+    }
+  ],
+  "cartTotal": 338997.00
+}
+```
+
+---
+
+#### POST `/api/cart` — Add item to cart
+
+> If the product is already in the cart, quantity is increased automatically.
+
+**Request**
+```json
+{
+  "productId": 1,
+  "quantity": 2
+}
+```
+
+**201 Created** — returns full updated cart (same shape as GET /api/cart)
+
+**400 — Out of stock**
+```json
+{
+  "error": "Product 'Sony WH-1000XM5' is out of stock"
+}
+```
+
+**400 — Quantity exceeds stock**
+```json
+{
+  "error": "Requested quantity (30) exceeds available stock (25)"
+}
+```
+
+---
+
+#### PATCH `/api/cart/{itemId}` — Update item quantity
+
+> Send `quantity: 0` to remove the item from the cart.
+
+**Request**
+```json
+{
+  "quantity": 3
+}
+```
+
+**200 OK** — returns full updated cart
+
+**Request to remove item**
+```json
+{
+  "quantity": 0
+}
+```
+
+**200 OK** — item removed, returns updated cart
+
+**404 — Item not found or belongs to another user**
+```json
+{
+  "error": "Cart item not found or does not belong to you"
+}
+```
+
+---
+
+#### DELETE `/api/cart` — Clear entire cart
+
+**204 No Content** — cart cleared, no body returned
+
+**404 — No cart found**
+```json
+{
+  "error": "No cart found for this user"
+}
+```
+
+---
+
+### 🧾 Order Endpoints (protected)
+
+---
+
+#### POST `/api/orders/checkout` — Checkout cart
+
+> Atomic — either everything succeeds or nothing changes.
+> Unit prices are locked at time of purchase.
+
+**Request** *(body optional)*
+```json
+{
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**201 Created**
+```json
+{
+  "id": 1,
+  "status": "PENDING",
+  "totalAmount": 338997.00,
+  "createdAt": "2026-03-13T11:30:00",
+  "items": [
+    {
+      "id": 1,
+      "productName": "iPhone 15 Pro",
+      "productCategory": "Electronics",
+      "quantity": 2,
+      "unitPrice": 164999.00,
+      "lineTotal": 329998.00
+    },
+    {
+      "id": 2,
+      "productName": "Instant Pot Duo 7-in-1",
+      "productCategory": "Home & Kitchen",
+      "quantity": 1,
+      "unitPrice": 8999.00,
+      "lineTotal": 8999.00
+    }
+  ]
+}
+```
+
+**400 — Empty cart**
+```json
+{
+  "error": "Your cart is empty"
+}
+```
+
+**409 — Stock conflict**
 ```json
 {
   "error": "Checkout failed due to insufficient stock",
@@ -287,25 +557,122 @@ Authorization: Bearer <your_jwt_token>
 }
 ```
 
+> **Idempotency:** Sending the same `idempotencyKey` within 10 seconds returns the existing order instead of creating a duplicate.
+
 ---
 
-## Idempotent Checkout
+#### GET `/api/orders` — Order history
 
-Sending the same `idempotencyKey` within 10 seconds returns the existing order instead of creating a duplicate:
+> Returns authenticated user's orders, newest first.
 
+**200 OK**
 ```json
-POST /api/orders/checkout
+[
+  {
+    "id": 2,
+    "status": "PENDING",
+    "totalAmount": 12999.00,
+    "createdAt": "2026-03-13T12:00:00",
+    "items": [
+      {
+        "id": 3,
+        "productName": "Nike Air Max 270",
+        "productCategory": "Clothing",
+        "quantity": 1,
+        "unitPrice": 12999.00,
+        "lineTotal": 12999.00
+      }
+    ]
+  },
+  {
+    "id": 1,
+    "status": "PENDING",
+    "totalAmount": 338997.00,
+    "createdAt": "2026-03-13T11:30:00",
+    "items": [
+      {
+        "id": 1,
+        "productName": "iPhone 15 Pro",
+        "productCategory": "Electronics",
+        "quantity": 2,
+        "unitPrice": 164999.00,
+        "lineTotal": 329998.00
+      },
+      {
+        "id": 2,
+        "productName": "Instant Pot Duo 7-in-1",
+        "productCategory": "Home & Kitchen",
+        "quantity": 1,
+        "unitPrice": 8999.00,
+        "lineTotal": 8999.00
+      }
+    ]
+  }
+]
+```
+
+---
+
+#### GET `/api/orders/{id}` — Get single order
+
+**200 OK**
+```json
 {
-  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
+  "id": 1,
+  "status": "PENDING",
+  "totalAmount": 338997.00,
+  "createdAt": "2026-03-13T11:30:00",
+  "items": [
+    {
+      "id": 1,
+      "productName": "iPhone 15 Pro",
+      "productCategory": "Electronics",
+      "quantity": 2,
+      "unitPrice": 164999.00,
+      "lineTotal": 329998.00
+    }
+  ]
 }
 ```
+
+**404 — Not found or belongs to another user**
+```json
+{
+  "error": "Order not found or does not belong to you"
+}
+```
+
+---
+
+### 💚 Health (public)
+
+#### GET `/health`
+
+**200 OK**
+```json
+{
+  "status": "ok",
+  "timestamp": "2026-03-13T08:30:00Z"
+}
+```
+
+---
+
+## Error Responses Summary
+
+| Status | When |
+|--------|------|
+| `400` | Missing/invalid fields, empty cart, quantity exceeds stock |
+| `401` | Wrong email or password, missing/expired token |
+| `404` | Resource not found or belongs to another user |
+| `409` | Duplicate email/mobile, out-of-stock product at checkout |
 
 ---
 
 ## SMS Notifications (Africa's Talking)
 
 SMS is sent automatically on:
-- ✅ Adding an item to cart
+- ✅ Adding an item to cart (cart summary)
 - ✅ Successful checkout (order confirmation)
 
 SMS failures are **silent** — they log the error but never break the API response.
@@ -346,11 +713,11 @@ The migration seeds 10 products across 3 categories. Two are out of stock:
 
 ## Production Checklist
 
-- [ ] Replace `jwt.secret` with a secure generated value: `openssl rand -base64 32`
+- [ ] Replace `jwt.secret` with a secure value: `openssl rand -base64 32`
 - [ ] Set `spring.jpa.show-sql=false`
 - [ ] Use environment variables for all secrets
 - [ ] Switch Africa's Talking from sandbox to live credentials
-- [ ] Change `spring.jpa.hibernate.ddl-auto` to `validate`
+- [ ] Set `spring.jpa.hibernate.ddl-auto=validate`
 
 ```properties
 spring.datasource.password=${DB_PASSWORD}
@@ -361,3 +728,12 @@ africastalking.api-key=${AT_API_KEY}
 ---
 
 ## Common Issues
+
+| Issue | Fix |
+|-------|-----|
+| `Cannot load driver class: com.mysql.cj.jdbc.Driver` | Run `./mvnw dependency:resolve` then reload Maven |
+| `getEmail() / builder() not found` | Enable annotation processing in IntelliJ + **Build → Rebuild Project** |
+| `Port 8080 already in use` | Run `lsof -ti:8080 \| xargs kill -9` |
+| Flyway migration fails | Drop and recreate the DB, then restart |
+| `jwt.secret` weak key error | Generate: `openssl rand -base64 32` |
+| `missing column [updated_at] in cart_items` | Run `ALTER TABLE cart_items MODIFY COLUMN updated_at DATETIME(6) NULL;` in MySQL |
