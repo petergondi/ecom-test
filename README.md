@@ -65,7 +65,30 @@ CREATE DATABASE your_db_name CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 ### 3. Configure application.properties
 
-Edit `src/main/resources/application.properties`:
+Copy the example file and fill in your values:
+```bash
+cp src/main/resources/application.properties.example src/main/resources/application.properties
+```
+
+Then edit `src/main/resources/application.properties` with your actual values:
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/your_db_name
+spring.datasource.username=your_mysql_username
+spring.datasource.password=your_mysql_password
+
+jwt.secret=<run: openssl rand -base64 32>
+jwt.expiration=86400000
+
+africastalking.username=sandbox
+africastalking.api-key=your_sandbox_api_key
+```
+
+Generate your JWT secret by running this in your terminal:
+```bash
+openssl rand -base64 32
+```
+
+Copy the output and paste it as the value for `jwt.secret`.
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/your_db_name
