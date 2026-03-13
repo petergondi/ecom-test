@@ -98,7 +98,7 @@ public class OrderService {
             productService.adjustStock(item.getProductId(), item.getQuantity());
         }
 
-        order.setStatus(OrderStatus.CANCELLED);
+        order.setStatus(OrderStatus.CANCELED);
         orderRepository.save(order);
     }
 }
