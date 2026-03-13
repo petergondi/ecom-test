@@ -49,7 +49,7 @@ src/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/petergondi/ecom-test
 cd demo
 ```
 
@@ -289,11 +289,3 @@ africastalking.api-key=${AT_API_KEY}
 ---
 
 ## Common Issues
-
-| Issue | Fix |
-|-------|-----|
-| `Cannot load driver class: com.mysql.cj.jdbc.Driver` | Run `./mvnw dependency:resolve` then reload Maven |
-| `getEmail() / builder() not found` | Enable annotation processing in IntelliJ + **Build → Rebuild Project** |
-| `Port 8080 already in use` | Run `lsof -ti:8080 \| xargs kill -9` |
-| Flyway migration fails | Drop and recreate the DB, then restart |
-| `jwt.secret` weak key error | Generate a proper key: `openssl rand -base64 32` |
