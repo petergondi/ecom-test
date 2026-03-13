@@ -193,6 +193,78 @@ Authorization: Bearer <your_jwt_token>
 3. Include token in all subsequent requests
 
 ---
+Here is the **raw Markdown**, clean and ready to paste into your README:
+
+---
+
+## 🔐 Auth Examples
+
+### **1. Register New User**
+
+**POST**
+`http://localhost:8080/api/auth/register`
+
+**Request Body**
+
+```json
+{
+    "name": "John Doe",
+    "email": "john2@example.com",
+    "password": "password123",
+    "mobile": "0712345675"
+}
+```
+
+---
+
+### **2. Login**
+
+**POST**
+`http://localhost:8080/api/auth/login`
+
+**Request Body**
+
+```json
+{
+    "email": "john1@example.com",
+    "password": "password123"
+}
+```
+
+**Example Response**
+
+```json
+{
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJqb2huMUBleGFtcGxlLmNvbSIsImlhdCI6MTc3MzQwMDYzOSwiZXhwIjoxNzczNDg3MDM5fQ.kWpxEQ30TWxasoWBN8aukTy7w294gg5j9VbXlexDcGI",
+    "type": "Bearer",
+    "id": 2,
+    "name": "John Doe",
+    "email": "john1@example.com"
+}
+```
+
+Use the token in the header:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+### **3. Get Authenticated User**
+
+**GET**
+`http://localhost:8080/api/auth/me`
+
+**Headers**
+
+```
+Authorization: Bearer <your_jwt_token>
+```
+
+---
+
+
 
 ## Error Responses
 
