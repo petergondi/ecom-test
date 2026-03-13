@@ -1,11 +1,18 @@
 package com.example.demo.service;
 
-
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.models.CartItems;
 import com.example.demo.models.Products;
+import com.example.demo.models.Users;
+import com.example.demo.models.dtos.AddToCartRequest;
+import com.example.demo.models.dtos.CartResponse;
 import com.example.demo.repository.CartItemRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -15,53 +22,132 @@ import java.util.List;
 public class CartService {
 
     private final CartItemRepository cartItemRepository;
-    private final ProductService productService;
+    private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final SmsService smsService;
 
-    public List<CartItems> getCartByUserId(Integer userId) {
-        return cartItemRepository.findByUserId(userId);
+    // ── Helper: get authenticated user ────────────────────────────────────────
+    private Users getAuthenticatedUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("Authenticated user not found"));
     }
 
-    public CartItems addToCart(Integer userId, Integer productId, Integer quantity) {
-        Products product = productService.getProductById(Long.valueOf(productId));
+    // ── GET cart ───────────────────────────────────────────────────────────────
+    public CartResponse getCart() {
+        Users user = getAuthenticatedUser();
+        List<CartItems> items = cartItemRepository.findByUser(user);
+        return buildCartResponse(items);
+    }
 
-        if (product.getStock() < quantity) {
-            throw new RuntimeException("Not enough stock available");
+    // ── POST add to cart ───────────────────────────────────────────────────────
+    @Transactional
+    public CartResponse addToCart(AddToCartRequest request) {
+        Users user = getAuthenticatedUser();
+
+        Products product = productRepository.findById(request.getProductId())
+                .orElseThrow(() -> new NotFoundException("Product not found with id: " + request.getProductId()));
+
+        // 400 if out of stock
+        if (product.getStock() <= 0) {
+            throw new IllegalArgumentException("Product '" + product.getName() + "' is out of stock");
         }
 
-        // If item already in cart, update quantity
-        return cartItemRepository.findByUserIdAndProductId(userId, productId)
+        // Check if already in cart — if so, increase quantity
+        CartItems cartItem = cartItemRepository.findByUserAndProduct(user, product)
                 .map(existing -> {
-                    int newQty = existing.getQuantity() + quantity;
+                    int newQty = existing.getQuantity() + request.getQuantity();
+                    // 400 if quantity exceeds available stock
+                    if (newQty > product.getStock()) {
+                        throw new IllegalArgumentException(
+                                "Requested quantity (" + newQty + ") exceeds available stock (" + product.getStock() + ")");
+                    }
                     existing.setQuantity(newQty);
-                    existing.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(newQty)));
                     return cartItemRepository.save(existing);
                 })
                 .orElseGet(() -> {
-                    CartItems item = CartItems.builder()
-                            .userId(userId)
-                            .productId(productId)
-                            .quantity(quantity)
-                            .totalAmount(product.getPrice().multiply(BigDecimal.valueOf(quantity)))
+                    // 400 if initial quantity exceeds stock
+                    if (request.getQuantity() > product.getStock()) {
+                        throw new IllegalArgumentException(
+                                "Requested quantity (" + request.getQuantity() + ") exceeds available stock (" + product.getStock() + ")");
+                    }
+                    CartItems newItem = CartItems.builder()
+                            .user(user)
+                            .product(product)
+                            .quantity(request.getQuantity())
                             .build();
-                    return cartItemRepository.save(item);
+                    return cartItemRepository.save(newItem);
                 });
+
+        List<CartItems> allItems = cartItemRepository.findByUser(user);
+        CartResponse cartResponse = buildCartResponse(allItems);
+
+        // SMS the cart summary to the customer
+        smsService.sendCartSummary(
+                user.getMobile(),
+                user.getName(),
+                allItems,
+                cartResponse.getCartTotal()
+        );
+
+        return cartResponse;
     }
 
-    public CartItems updateCartItem(Integer cartItemId, Integer quantity) {
-        CartItems item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("Cart item not found: " + cartItemId));
+    // ── PATCH update item quantity (quantity=0 removes item) ───────────────────
+    @Transactional
+    public CartResponse updateCartItem(Integer itemId, Integer quantity) {
+        Users user = getAuthenticatedUser();
 
-        Products product = productService.getProductById(Long.valueOf(item.getProductId()));
-        item.setQuantity(quantity);
-        item.setTotalAmount(product.getPrice().multiply(BigDecimal.valueOf(quantity)));
-        return cartItemRepository.save(item);
+        CartItems item = cartItemRepository.findByIdAndUser(itemId, user)
+                .orElseThrow(() -> new NotFoundException("Cart item not found or does not belong to you"));
+
+        if (quantity == 0) {
+            // quantity=0 means remove
+            cartItemRepository.delete(item);
+        } else {
+            // Validate against current stock (always uses live stock)
+            Products product = item.getProduct();
+            if (quantity > product.getStock()) {
+                throw new IllegalArgumentException(
+                        "Requested quantity (" + quantity + ") exceeds available stock (" + product.getStock() + ")");
+            }
+            item.setQuantity(quantity);
+            cartItemRepository.save(item);
+        }
+
+        List<CartItems> allItems = cartItemRepository.findByUser(user);
+        return buildCartResponse(allItems);
     }
 
-    public void removeCartItem(Integer cartItemId) {
-        cartItemRepository.deleteById(cartItemId);
+    // ── DELETE clear entire cart ───────────────────────────────────────────────
+    @Transactional
+    public void clearCart() {
+        Users user = getAuthenticatedUser();
+        List<CartItems> items = cartItemRepository.findByUser(user);
+        if (items.isEmpty()) {
+            throw new NotFoundException("No cart found for this user");
+        }
+        cartItemRepository.deleteByUser(user);
     }
 
-    public void clearCart(Integer userId) {
-        cartItemRepository.deleteByUserId(userId);
+    // ── Build response (always uses live product prices) ──────────────────────
+    private CartResponse buildCartResponse(List<CartItems> items) {
+        List<CartResponse.CartItemResponse> itemResponses = items.stream()
+                .map(item -> CartResponse.CartItemResponse.builder()
+                        .id(item.getId())
+                        .product(item.getProduct())
+                        .quantity(item.getQuantity())
+                        .lineTotal(item.getLineTotal()) // live price * quantity
+                        .build())
+                .toList();
+
+        BigDecimal cartTotal = itemResponses.stream()
+                .map(CartResponse.CartItemResponse::getLineTotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return CartResponse.builder()
+                .items(itemResponses)
+                .cartTotal(cartTotal)
+                .build();
     }
 }

@@ -13,11 +13,28 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItems {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long orderId;
-    private Long productId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Orders order;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Products product;
+
+    @Column(nullable = false)
     private Integer quantity;
+
+    // Locked at time of purchase — never recalculated
+    @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
+
+    @Transient
+    public BigDecimal getLineTotal() {
+        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
 }
