@@ -93,7 +93,7 @@ public class CartService {
         return cartResponse;
     }
 
-    // ── PATCH update item quantity (quantity=0 removes item) ───────────────────
+    // ─ PATCH update item quantity (quantity=0 removes item)
     @Transactional
     public CartResponse updateCartItem(Integer itemId, Integer quantity) {
         Users user = getAuthenticatedUser();
@@ -119,7 +119,7 @@ public class CartService {
         return buildCartResponse(allItems);
     }
 
-    // ── DELETE clear entire cart ───────────────────────────────────────────────
+    // DELETE clear entire cart
     @Transactional
     public void clearCart() {
         Users user = getAuthenticatedUser();

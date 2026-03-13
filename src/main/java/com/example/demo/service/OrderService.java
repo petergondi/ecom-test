@@ -81,13 +81,13 @@ public class OrderService {
             return toResponse(existing.get());
         }
 
-        // ── 3. Verify cart is not empty ────────────────────────────────────────
+        // ── 3. Verify cart is not empty
         List<CartItems> cartItems = cartItemRepository.findByUser(user);
         if (cartItems.isEmpty()) {
             throw new IllegalArgumentException("Your cart is empty");
         }
 
-        // ── 4. Verify stock for ALL items before making any changes ────────────
+        // ── 4. Verify stock for ALL items before making any changes
         List<String> stockErrors = new ArrayList<>();
         for (CartItems cartItem : cartItems) {
             Products product = productRepository.findById(cartItem.getProduct().getId())
