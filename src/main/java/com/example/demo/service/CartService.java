@@ -26,21 +26,21 @@ public class CartService {
     private final UserRepository userRepository;
     private final SmsService smsService;
 
-    // ── Helper: get authenticated user ────────────────────────────────────────
+    // ── Helper: get authenticated user
     private Users getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Authenticated user not found"));
     }
 
-    // ── GET cart ───────────────────────────────────────────────────────────────
+    // ── GET cart
     public CartResponse getCart() {
         Users user = getAuthenticatedUser();
         List<CartItems> items = cartItemRepository.findByUser(user);
         return buildCartResponse(items);
     }
 
-    // ── POST add to cart ───────────────────────────────────────────────────────
+    // ── POST add to cart
     @Transactional
     public CartResponse addToCart(AddToCartRequest request) {
         Users user = getAuthenticatedUser();
@@ -130,7 +130,7 @@ public class CartService {
         cartItemRepository.deleteByUser(user);
     }
 
-    // ── Build response (always uses live product prices) ──────────────────────
+    // ── Build response (always uses live product prices)
     private CartResponse buildCartResponse(List<CartItems> items) {
         List<CartResponse.CartItemResponse> itemResponses = items.stream()
                 .map(item -> CartResponse.CartItemResponse.builder()

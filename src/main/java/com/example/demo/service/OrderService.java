@@ -31,14 +31,14 @@ public class OrderService {
     private final UserRepository userRepository;
     private final SmsService smsService;
 
-    // ── Helper: get authenticated user ────────────────────────────────────────
+    // ── Helper: get authenticated user
     private Users getAuthenticatedUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Authenticated user not found"));
     }
 
-    // ── Helper: map Orders entity → OrderResponse DTO ─────────────────────────
+    // ── Helper: map Orders entity → OrderResponse DTO
     private OrderResponse toResponse(Orders order) {
         List<OrderResponse.OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderResponse.OrderItemResponse.builder()
@@ -60,19 +60,19 @@ public class OrderService {
                 .build();
     }
 
-    // ── POST /orders/checkout ──────────────────────────────────────────────────
+    // ── POST /orders/checkout
     @Transactional
     public OrderResponse checkout(CheckoutRequest request) {
         Users user = getAuthenticatedUser();
 
-        // ── 1. Resolve idempotency key ─────────────────────────────────────────
+        // 1. Resolve idempotency key
         // If client didn't supply one, generate a 10-second bucket key
         String idempotencyKey = (request != null && request.getIdempotencyKey() != null
                 && !request.getIdempotencyKey().isBlank())
                 ? request.getIdempotencyKey()
                 : user.getId() + ":" + (System.currentTimeMillis() / 10000); // 10s bucket
 
-        // ── 2. Idempotency check — return existing order if found ──────────────
+        // 2. Idempotency check — return existing order if found
         LocalDateTime tenSecondsAgo = LocalDateTime.now().minusSeconds(10);
         var existing = orderRepository.findRecentByUserAndIdempotencyKey(
                 user, idempotencyKey, tenSecondsAgo);
@@ -105,7 +105,7 @@ public class OrderService {
             throw new StockConflictException(stockErrors);
         }
 
-        // ── 5. Create order ────────────────────────────────────────────────────
+        // ─5. Create order
         Orders order = Orders.builder()
                 .user(user)
                 .status(OrderStatus.PENDING)
@@ -114,7 +114,7 @@ public class OrderService {
                 .build();
         Orders savedOrder = orderRepository.save(order);
 
-        // ── 6. Create order items, deduct stock ────────────────────────────────
+        // ── 6. Create order items, deduct stock
         BigDecimal total = BigDecimal.ZERO;
         List<OrderItems> orderItems = new ArrayList<>();
 
@@ -141,21 +141,21 @@ public class OrderService {
 
         orderItemRepository.saveAll(orderItems);
 
-        // ── 7. Update order total ──────────────────────────────────────────────
+        // ── 7. Update order total
         savedOrder.setTotalAmount(total);
         savedOrder.setItems(orderItems);
         orderRepository.save(savedOrder);
 
-        // ── 8. Clear cart ──────────────────────────────────────────────────────
+        // ── 8. Clear cart
         cartItemRepository.deleteByUser(user);
 
-        // ── 9. SMS confirmation ────────────────────────────────────────────────
+        // ── 9. SMS confirmation
         sendOrderConfirmationSms(user, savedOrder, orderItems);
 
         return toResponse(savedOrder);
     }
 
-    // ── GET /orders — order history ────────────────────────────────────────────
+    // ── GET /orders — order history
     @Transactional(readOnly = true)
     public List<OrderResponse> getOrderHistory() {
         Users user = getAuthenticatedUser();
@@ -165,7 +165,7 @@ public class OrderService {
                 .toList();
     }
 
-    // ── GET /orders/:id — single order ────────────────────────────────────────
+    // ── GET /orders/:id — single order
     @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long orderId) {
         Users user = getAuthenticatedUser();
@@ -175,7 +175,7 @@ public class OrderService {
         return toResponse(order);
     }
 
-    // ── SMS helper ─────────────────────────────────────────────────────────────
+    // ── SMS helper
     private void sendOrderConfirmationSms(Users user, Orders order, List<OrderItems> items) {
         try {
             StringBuilder sb = new StringBuilder();
