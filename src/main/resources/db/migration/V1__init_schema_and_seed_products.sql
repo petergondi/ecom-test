@@ -3,6 +3,7 @@
 -- Place in: src/main/resources/db/migration/
 -- ============================================================
 
+
 -- ── Users ─────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
                                      id           BIGINT AUTO_INCREMENT PRIMARY KEY,

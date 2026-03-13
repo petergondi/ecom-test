@@ -38,6 +38,7 @@ public class CartItems {
     private LocalDateTime addedAt;
 
     @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     // Always reflects current product price * quantity (not stored)
