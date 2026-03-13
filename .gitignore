@@ -36,4 +36,7 @@ build/
 *.log
 logs/
 application-local.properties
+application.properties
 application-local.yml
+# Application secrets
+src/main/resources/application.properties
