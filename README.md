@@ -1,6 +1,10 @@
-# ecom-test — 🛒 Demo E-Commerce API
+# ecom-test — Demo E-Commerce API
 
 A Spring Boot REST API with JWT authentication, cart management, order checkout, and SMS notifications via Africa's Talking.
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://interstellar-sunset-5393.postman.co/workspace/My-Workspace~92bac59b-955b-47ba-88ed-fd49b310c73b/collection/4932219-f3c033af-ccdb-4e6a-b194-80f6e18cb93e?action=share&source=copy-link&creator=4932219)
+
+> **Postman Collection** — [Open in Postman](https://interstellar-sunset-5393.postman.co/workspace/My-Workspace~92bac59b-955b-47ba-88ed-fd49b310c73b/collection/4932219-f3c033af-ccdb-4e6a-b194-80f6e18cb93e?action=share&source=copy-link&creator=4932219)
 
 ---
 
@@ -79,8 +83,8 @@ africastalking.api-key=your_sandbox_api_key
 
 ```xml
 <dependency>
-    <groupId>org.flywaydb</groupId>
-    <artifactId>flyway-mysql</artifactId>
+ <groupId>org.flywaydb</groupId>
+ <artifactId>flyway-mysql</artifactId>
 </dependency>
 ```
 
@@ -96,7 +100,7 @@ Flyway runs this automatically on startup — creates all tables and seeds 10 pr
 
 ```
 Settings → Build, Execution, Deployment → Compiler → Annotation Processors
-→ ✅ Enable annotation processing → Apply → OK
+→ Enable annotation processing → Apply → OK
 ```
 
 ### 7. Run the application
@@ -105,7 +109,7 @@ Settings → Build, Execution, Deployment → Compiler → Annotation Processors
 ./mvnw clean spring-boot:run
 ```
 
-Or in IntelliJ: open `DemoApplication.java` → click the green ▶ Run button.
+Or in IntelliJ: open `DemoApplication.java` → click the green Run button.
 
 The API starts at: **http://localhost:8080**
 
@@ -119,8 +123,8 @@ curl http://localhost:8080/health
 
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-03-13T08:30:00Z"
+ "status": "ok",
+ "timestamp": "2026-03-13T08:30:00Z"
 }
 ```
 
@@ -145,7 +149,7 @@ Authorization: Bearer <your_jwt_token>
 
 ---
 
-### 🔓 Auth Endpoints (public)
+### Auth Endpoints (public)
 
 ---
 
@@ -154,38 +158,38 @@ Authorization: Bearer <your_jwt_token>
 **Request**
 ```json
 {
-  "name": "John Doe",
-  "email": "john@example.com",
-  "mobile": "0712345678",
-  "password": "password123"
+ "name": "John Doe",
+ "email": "john@example.com",
+ "mobile": "0712345678",
+ "password": "password123"
 }
 ```
 
 **201 Created**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "type": "Bearer",
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com"
+ "token": "eyJhbGciOiJIUzI1NiJ9...",
+ "type": "Bearer",
+ "id": 1,
+ "name": "John Doe",
+ "email": "john@example.com"
 }
 ```
 
 **400 — Missing fields**
 ```json
 {
-  "errors": {
-    "email": "Email is required",
-    "password": "Password is required"
-  }
+ "errors": {
+ "email": "Email is required",
+ "password": "Password is required"
+ }
 }
 ```
 
 **409 — Email already exists**
 ```json
 {
-  "error": "Email already in use: john@example.com"
+ "error": "Email already in use: john@example.com"
 }
 ```
 
@@ -196,26 +200,26 @@ Authorization: Bearer <your_jwt_token>
 **Request**
 ```json
 {
-  "email": "john@example.com",
-  "password": "password123"
+ "email": "john@example.com",
+ "password": "password123"
 }
 ```
 
 **200 OK**
 ```json
 {
-  "token": "eyJhbGciOiJIUzI1NiJ9...",
-  "type": "Bearer",
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com"
+ "token": "eyJhbGciOiJIUzI1NiJ9...",
+ "type": "Bearer",
+ "id": 1,
+ "name": "John Doe",
+ "email": "john@example.com"
 }
 ```
 
 **401 — Wrong credentials**
 ```json
 {
-  "error": "Invalid email or password"
+ "error": "Invalid email or password"
 }
 ```
 
@@ -231,16 +235,16 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 {
-  "type": "Bearer",
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com"
+ "type": "Bearer",
+ "id": 1,
+ "name": "John Doe",
+ "email": "john@example.com"
 }
 ```
 
 ---
 
-### 📦 Products Endpoints (protected)
+### Products Endpoints (protected)
 
 ---
 
@@ -261,34 +265,34 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 {
-  "data": [
-    {
-      "id": 1,
-      "name": "iPhone 15 Pro",
-      "description": "Apple iPhone 15 Pro 256GB",
-      "price": 164999.00,
-      "category": "Electronics",
-      "stock": 25,
-      "inStock": true,
-      "createdAt": "2026-03-13T08:00:00"
-    },
-    {
-      "id": 3,
-      "name": "Sony WH-1000XM5",
-      "description": "Wireless Noise-Cancelling Headphones",
-      "price": 34999.00,
-      "category": "Electronics",
-      "stock": 0,
-      "inStock": false,
-      "createdAt": "2026-03-13T08:00:00"
-    }
-  ],
-  "meta": {
-    "total": 10,
-    "page": 1,
-    "limit": 10,
-    "totalPages": 1
-  }
+ "data": [
+ {
+ "id": 1,
+ "name": "iPhone 15 Pro",
+ "description": "Apple iPhone 15 Pro 256GB",
+ "price": 164999.00,
+ "category": "Electronics",
+ "stock": 25,
+ "inStock": true,
+ "createdAt": "2026-03-13T08:00:00"
+ },
+ {
+ "id": 3,
+ "name": "Sony WH-1000XM5",
+ "description": "Wireless Noise-Cancelling Headphones",
+ "price": 34999.00,
+ "category": "Electronics",
+ "stock": 0,
+ "inStock": false,
+ "createdAt": "2026-03-13T08:00:00"
+ }
+ ],
+ "meta": {
+ "total": 10,
+ "page": 1,
+ "limit": 10,
+ "totalPages": 1
+ }
 }
 ```
 
@@ -299,21 +303,21 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 {
-  "id": 1,
-  "name": "iPhone 15 Pro",
-  "description": "Apple iPhone 15 Pro 256GB",
-  "price": 164999.00,
-  "category": "Electronics",
-  "stock": 25,
-  "inStock": true,
-  "createdAt": "2026-03-13T08:00:00"
+ "id": 1,
+ "name": "iPhone 15 Pro",
+ "description": "Apple iPhone 15 Pro 256GB",
+ "price": 164999.00,
+ "category": "Electronics",
+ "stock": 25,
+ "inStock": true,
+ "createdAt": "2026-03-13T08:00:00"
 }
 ```
 
 **404 — Not found**
 ```json
 {
-  "error": "Product not found with id: 99"
+ "error": "Product not found with id: 99"
 }
 ```
 
@@ -324,25 +328,25 @@ Authorization: Bearer <token>
 **Request**
 ```json
 {
-  "name": "iPhone 15 Pro",
-  "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
-  "price": 164999.00,
-  "category": "Electronics",
-  "stock": 25
+ "name": "iPhone 15 Pro",
+ "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
+ "price": 164999.00,
+ "category": "Electronics",
+ "stock": 25
 }
 ```
 
 **201 Created**
 ```json
 {
-  "id": 1,
-  "name": "iPhone 15 Pro",
-  "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
-  "price": 164999.00,
-  "category": "Electronics",
-  "stock": 25,
-  "inStock": true,
-  "createdAt": "2026-03-13T08:00:00"
+ "id": 1,
+ "name": "iPhone 15 Pro",
+ "description": "Apple iPhone 15 Pro 256GB, Titanium finish",
+ "price": 164999.00,
+ "category": "Electronics",
+ "stock": 25,
+ "inStock": true,
+ "createdAt": "2026-03-13T08:00:00"
 }
 ```
 
@@ -353,11 +357,11 @@ Authorization: Bearer <token>
 **Request**
 ```json
 {
-  "name": "iPhone 15 Pro",
-  "description": "Updated description",
-  "price": 159999.00,
-  "category": "Electronics",
-  "stock": 20
+ "name": "iPhone 15 Pro",
+ "description": "Updated description",
+ "price": 159999.00,
+ "category": "Electronics",
+ "stock": 20
 }
 ```
 
@@ -372,13 +376,13 @@ Authorization: Bearer <token>
 **404 — Not found**
 ```json
 {
-  "error": "Product not found with id: 99"
+ "error": "Product not found with id: 99"
 }
 ```
 
 ---
 
-### 🛒 Cart Endpoints (protected)
+### Cart Endpoints (protected)
 
 ---
 
@@ -387,35 +391,35 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 {
-  "items": [
-    {
-      "id": 1,
-      "product": {
-        "id": 1,
-        "name": "iPhone 15 Pro",
-        "price": 164999.00,
-        "category": "Electronics",
-        "stock": 25,
-        "inStock": true
-      },
-      "quantity": 2,
-      "lineTotal": 329998.00
-    },
-    {
-      "id": 2,
-      "product": {
-        "id": 8,
-        "name": "Instant Pot Duo 7-in-1",
-        "price": 8999.00,
-        "category": "Home & Kitchen",
-        "stock": 30,
-        "inStock": true
-      },
-      "quantity": 1,
-      "lineTotal": 8999.00
-    }
-  ],
-  "cartTotal": 338997.00
+ "items": [
+ {
+ "id": 1,
+ "product": {
+ "id": 1,
+ "name": "iPhone 15 Pro",
+ "price": 164999.00,
+ "category": "Electronics",
+ "stock": 25,
+ "inStock": true
+ },
+ "quantity": 2,
+ "lineTotal": 329998.00
+ },
+ {
+ "id": 2,
+ "product": {
+ "id": 8,
+ "name": "Instant Pot Duo 7-in-1",
+ "price": 8999.00,
+ "category": "Home & Kitchen",
+ "stock": 30,
+ "inStock": true
+ },
+ "quantity": 1,
+ "lineTotal": 8999.00
+ }
+ ],
+ "cartTotal": 338997.00
 }
 ```
 
@@ -428,8 +432,8 @@ Authorization: Bearer <token>
 **Request**
 ```json
 {
-  "productId": 1,
-  "quantity": 2
+ "productId": 1,
+ "quantity": 2
 }
 ```
 
@@ -438,14 +442,14 @@ Authorization: Bearer <token>
 **400 — Out of stock**
 ```json
 {
-  "error": "Product 'Sony WH-1000XM5' is out of stock"
+ "error": "Product 'Sony WH-1000XM5' is out of stock"
 }
 ```
 
 **400 — Quantity exceeds stock**
 ```json
 {
-  "error": "Requested quantity (30) exceeds available stock (25)"
+ "error": "Requested quantity (30) exceeds available stock (25)"
 }
 ```
 
@@ -458,7 +462,7 @@ Authorization: Bearer <token>
 **Request**
 ```json
 {
-  "quantity": 3
+ "quantity": 3
 }
 ```
 
@@ -467,7 +471,7 @@ Authorization: Bearer <token>
 **Request to remove item**
 ```json
 {
-  "quantity": 0
+ "quantity": 0
 }
 ```
 
@@ -476,7 +480,7 @@ Authorization: Bearer <token>
 **404 — Item not found or belongs to another user**
 ```json
 {
-  "error": "Cart item not found or does not belong to you"
+ "error": "Cart item not found or does not belong to you"
 }
 ```
 
@@ -489,13 +493,13 @@ Authorization: Bearer <token>
 **404 — No cart found**
 ```json
 {
-  "error": "No cart found for this user"
+ "error": "No cart found for this user"
 }
 ```
 
 ---
 
-### 🧾 Order Endpoints (protected)
+### Order Endpoints (protected)
 
 ---
 
@@ -507,53 +511,53 @@ Authorization: Bearer <token>
 **Request** *(body optional)*
 ```json
 {
-  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
+ "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
 **201 Created**
 ```json
 {
-  "id": 1,
-  "status": "PENDING",
-  "totalAmount": 338997.00,
-  "createdAt": "2026-03-13T11:30:00",
-  "items": [
-    {
-      "id": 1,
-      "productName": "iPhone 15 Pro",
-      "productCategory": "Electronics",
-      "quantity": 2,
-      "unitPrice": 164999.00,
-      "lineTotal": 329998.00
-    },
-    {
-      "id": 2,
-      "productName": "Instant Pot Duo 7-in-1",
-      "productCategory": "Home & Kitchen",
-      "quantity": 1,
-      "unitPrice": 8999.00,
-      "lineTotal": 8999.00
-    }
-  ]
+ "id": 1,
+ "status": "PENDING",
+ "totalAmount": 338997.00,
+ "createdAt": "2026-03-13T11:30:00",
+ "items": [
+ {
+ "id": 1,
+ "productName": "iPhone 15 Pro",
+ "productCategory": "Electronics",
+ "quantity": 2,
+ "unitPrice": 164999.00,
+ "lineTotal": 329998.00
+ },
+ {
+ "id": 2,
+ "productName": "Instant Pot Duo 7-in-1",
+ "productCategory": "Home & Kitchen",
+ "quantity": 1,
+ "unitPrice": 8999.00,
+ "lineTotal": 8999.00
+ }
+ ]
 }
 ```
 
 **400 — Empty cart**
 ```json
 {
-  "error": "Your cart is empty"
+ "error": "Your cart is empty"
 }
 ```
 
 **409 — Stock conflict**
 ```json
 {
-  "error": "Checkout failed due to insufficient stock",
-  "details": [
-    "'Sony WH-1000XM5' — requested: 2, available: 0",
-    "'The North Face Puffer Jacket' — requested: 1, available: 0"
-  ]
+ "error": "Checkout failed due to insufficient stock",
+ "details": [
+ "'Sony WH-1000XM5' — requested: 2, available: 0",
+ "'The North Face Puffer Jacket' — requested: 1, available: 0"
+ ]
 }
 ```
 
@@ -568,46 +572,46 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 [
-  {
-    "id": 2,
-    "status": "PENDING",
-    "totalAmount": 12999.00,
-    "createdAt": "2026-03-13T12:00:00",
-    "items": [
-      {
-        "id": 3,
-        "productName": "Nike Air Max 270",
-        "productCategory": "Clothing",
-        "quantity": 1,
-        "unitPrice": 12999.00,
-        "lineTotal": 12999.00
-      }
-    ]
-  },
-  {
-    "id": 1,
-    "status": "PENDING",
-    "totalAmount": 338997.00,
-    "createdAt": "2026-03-13T11:30:00",
-    "items": [
-      {
-        "id": 1,
-        "productName": "iPhone 15 Pro",
-        "productCategory": "Electronics",
-        "quantity": 2,
-        "unitPrice": 164999.00,
-        "lineTotal": 329998.00
-      },
-      {
-        "id": 2,
-        "productName": "Instant Pot Duo 7-in-1",
-        "productCategory": "Home & Kitchen",
-        "quantity": 1,
-        "unitPrice": 8999.00,
-        "lineTotal": 8999.00
-      }
-    ]
-  }
+ {
+ "id": 2,
+ "status": "PENDING",
+ "totalAmount": 12999.00,
+ "createdAt": "2026-03-13T12:00:00",
+ "items": [
+ {
+ "id": 3,
+ "productName": "Nike Air Max 270",
+ "productCategory": "Clothing",
+ "quantity": 1,
+ "unitPrice": 12999.00,
+ "lineTotal": 12999.00
+ }
+ ]
+ },
+ {
+ "id": 1,
+ "status": "PENDING",
+ "totalAmount": 338997.00,
+ "createdAt": "2026-03-13T11:30:00",
+ "items": [
+ {
+ "id": 1,
+ "productName": "iPhone 15 Pro",
+ "productCategory": "Electronics",
+ "quantity": 2,
+ "unitPrice": 164999.00,
+ "lineTotal": 329998.00
+ },
+ {
+ "id": 2,
+ "productName": "Instant Pot Duo 7-in-1",
+ "productCategory": "Home & Kitchen",
+ "quantity": 1,
+ "unitPrice": 8999.00,
+ "lineTotal": 8999.00
+ }
+ ]
+ }
 ]
 ```
 
@@ -618,41 +622,41 @@ Authorization: Bearer <token>
 **200 OK**
 ```json
 {
-  "id": 1,
-  "status": "PENDING",
-  "totalAmount": 338997.00,
-  "createdAt": "2026-03-13T11:30:00",
-  "items": [
-    {
-      "id": 1,
-      "productName": "iPhone 15 Pro",
-      "productCategory": "Electronics",
-      "quantity": 2,
-      "unitPrice": 164999.00,
-      "lineTotal": 329998.00
-    }
-  ]
+ "id": 1,
+ "status": "PENDING",
+ "totalAmount": 338997.00,
+ "createdAt": "2026-03-13T11:30:00",
+ "items": [
+ {
+ "id": 1,
+ "productName": "iPhone 15 Pro",
+ "productCategory": "Electronics",
+ "quantity": 2,
+ "unitPrice": 164999.00,
+ "lineTotal": 329998.00
+ }
+ ]
 }
 ```
 
 **404 — Not found or belongs to another user**
 ```json
 {
-  "error": "Order not found or does not belong to you"
+ "error": "Order not found or does not belong to you"
 }
 ```
 
 ---
 
-### 💚 Health (public)
+### Health (public)
 
 #### GET `/health`
 
 **200 OK**
 ```json
 {
-  "status": "ok",
-  "timestamp": "2026-03-13T08:30:00Z"
+ "status": "ok",
+ "timestamp": "2026-03-13T08:30:00Z"
 }
 ```
 
@@ -672,8 +676,8 @@ Authorization: Bearer <token>
 ## SMS Notifications (Africa's Talking)
 
 SMS is sent automatically on:
-- ✅ Adding an item to cart (cart summary)
-- ✅ Successful checkout (order confirmation)
+- Adding an item to cart (cart summary)
+- Successful checkout (order confirmation)
 
 SMS failures are **silent** — they log the error but never break the API response.
 
