@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.exception.DuplicateResourceException;
 import com.example.demo.models.dtos.AuthResponse;
 import com.example.demo.models.dtos.LoginRequest;
 import com.example.demo.models.dtos.RegisterRequest;
@@ -26,10 +27,10 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already in use");
+            throw new DuplicateResourceException("Email already in use: " + request.getEmail()); // 409
         }
         if (userRepository.existsByMobile(request.getMobile())) {
-            throw new RuntimeException("Mobile already in use");
+            throw new DuplicateResourceException("Mobile already in use: " + request.getMobile()); // 409
         }
 
         Users user = Users.builder()

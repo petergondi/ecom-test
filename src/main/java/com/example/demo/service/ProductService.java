@@ -1,12 +1,17 @@
+// ProductService.java
 package com.example.demo.service;
 
-
+import com.example.demo.exception.NotFoundException;
 import com.example.demo.models.Products;
 import com.example.demo.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -14,13 +19,27 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Products> getAllProducts() {
-        return productRepository.findAll();
+    public Map<String, Object> getAllProducts(int page, int limit) {
+        // Enforce max limit of 50
+        limit = Math.min(limit, 50);
+        // Convert to 0-based page index
+        Pageable pageable = PageRequest.of(page - 1, limit);
+        Page<Products> result = productRepository.findAll(pageable);
+
+        return Map.of(
+                "data", result.getContent(),
+                "meta", Map.of(
+                        "total", result.getTotalElements(),
+                        "page", page,
+                        "limit", limit,
+                        "totalPages", result.getTotalPages()
+                )
+        );
     }
 
     public Products getProductById(Long id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Product not found with id: " + id));
     }
 
     public List<Products> getProductsByCategory(String category) {
@@ -56,7 +75,7 @@ public class ProductService {
     }
 
     public void deleteProduct(Long id) {
-        getProductById(id); // ensure exists
+        getProductById(id);
         productRepository.deleteById(id);
     }
 }
